@@ -55,11 +55,11 @@ class VcsRepository extends ArrayRepository implements ConfigurableRepositoryInt
             'svn'           => 'Composer\Repository\Vcs\SvnDriver',
         );
 
-        $this->url = $repoConfig['url'];
-        $this->io = $io;
-        $this->type = isset($repoConfig['type']) ? $repoConfig['type'] : 'vcs';
-        $this->verbose = $io->isVeryVerbose();
-        $this->config = $config;
+        $this->url        = $repoConfig['url'];
+        $this->io         = $io;
+        $this->type       = isset($repoConfig['type']) ? $repoConfig['type'] : 'vcs';
+        $this->verbose    = $io->isVeryVerbose();
+        $this->config     = $config;
         $this->repoConfig = $repoConfig;
     }
 
@@ -76,9 +76,9 @@ class VcsRepository extends ArrayRepository implements ConfigurableRepositoryInt
     public function getDriver()
     {
         if (isset($this->drivers[$this->type])) {
-            $class = $this->drivers[$this->type];
+            $class  = $this->drivers[$this->type];
             $driver = new $class($this->repoConfig, $this->io, $this->config);
-            /** @var VcsDriverInterface $driver */
+            /* @var VcsDriverInterface $driver */
             $driver->initialize();
 
             return $driver;
@@ -87,7 +87,7 @@ class VcsRepository extends ArrayRepository implements ConfigurableRepositoryInt
         foreach ($this->drivers as $driver) {
             if ($driver::supports($this->io, $this->config, $this->url)) {
                 $driver = new $driver($this->repoConfig, $this->io, $this->config);
-                /** @var VcsDriverInterface $driver */
+                /* @var VcsDriverInterface $driver */
                 $driver->initialize();
 
                 return $driver;
@@ -97,7 +97,7 @@ class VcsRepository extends ArrayRepository implements ConfigurableRepositoryInt
         foreach ($this->drivers as $driver) {
             if ($driver::supports($this->io, $this->config, $this->url, true)) {
                 $driver = new $driver($this->repoConfig, $this->io, $this->config);
-                /** @var VcsDriverInterface $driver */
+                /* @var VcsDriverInterface $driver */
                 $driver->initialize();
 
                 return $driver;
@@ -121,14 +121,14 @@ class VcsRepository extends ArrayRepository implements ConfigurableRepositoryInt
             throw new \InvalidArgumentException('No driver found to handle VCS repository '.$this->url);
         }
 
-        $this->versionParser = new VersionParser;
+        $this->versionParser = new VersionParser();
         if (!$this->loader) {
             $this->loader = new ArrayLoader($this->versionParser);
         }
 
         try {
             if ($driver->hasComposerFile($driver->getRootIdentifier())) {
-                $data = $driver->getComposerInformation($driver->getRootIdentifier());
+                $data              = $driver->getComposerInformation($driver->getRootIdentifier());
                 $this->packageName = !empty($data['name']) ? $data['name'] : null;
             }
         } catch (\Exception $e) {
@@ -138,7 +138,7 @@ class VcsRepository extends ArrayRepository implements ConfigurableRepositoryInt
         }
 
         foreach ($driver->getTags() as $tag => $identifier) {
-            $msg = 'Reading composer.json of <info>' . ($this->packageName ?: $this->url) . '</info> (<comment>' . $tag . '</comment>)';
+            $msg = 'Reading composer.json of <info>'.($this->packageName ?: $this->url).'</info> (<comment>'.$tag.'</comment>)';
             if ($verbose) {
                 $this->io->writeError($msg);
             } else {
@@ -168,12 +168,12 @@ class VcsRepository extends ArrayRepository implements ConfigurableRepositoryInt
                     $data['version_normalized'] = $this->versionParser->normalize($data['version']);
                 } else {
                     // auto-versioned package, read value from tag
-                    $data['version'] = $tag;
+                    $data['version']            = $tag;
                     $data['version_normalized'] = $parsedTag;
                 }
 
                 // make sure tag packages have no -dev flag
-                $data['version'] = preg_replace('{[.-]?dev$}i', '', $data['version']);
+                $data['version']            = preg_replace('{[.-]?dev$}i', '', $data['version']);
                 $data['version_normalized'] = preg_replace('{(^dev-|[.-]?dev$)}i', '', $data['version_normalized']);
 
                 // broken package, version doesn't match tag
@@ -202,7 +202,7 @@ class VcsRepository extends ArrayRepository implements ConfigurableRepositoryInt
         }
 
         foreach ($driver->getBranches() as $branch => $identifier) {
-            $msg = 'Reading composer.json of <info>' . ($this->packageName ?: $this->url) . '</info> (<comment>' . $branch . '</comment>)';
+            $msg = 'Reading composer.json of <info>'.($this->packageName ?: $this->url).'</info> (<comment>'.$branch.'</comment>)';
             if ($verbose) {
                 $this->io->writeError($msg);
             } else {
@@ -225,15 +225,15 @@ class VcsRepository extends ArrayRepository implements ConfigurableRepositoryInt
                 }
 
                 // branches are always auto-versioned, read value from branch name
-                $data['version'] = $branch;
+                $data['version']            = $branch;
                 $data['version_normalized'] = $parsedBranch;
 
                 // make sure branch packages have a dev flag
                 if ('dev-' === substr($parsedBranch, 0, 4) || '9999999-dev' === $parsedBranch) {
-                    $data['version'] = 'dev-' . $data['version'];
+                    $data['version'] = 'dev-'.$data['version'];
                 } else {
-                    $prefix = substr($branch, 0, 1) === 'v' ? 'v' : '';
-                    $data['version'] = $prefix . preg_replace('{(\.9{7})+}', '.x', $parsedBranch);
+                    $prefix          = substr($branch, 0, 1) === 'v' ? 'v' : '';
+                    $data['version'] = $prefix.preg_replace('{(\.9{7})+}', '.x', $parsedBranch);
                 }
 
                 if ($verbose) {
@@ -241,7 +241,7 @@ class VcsRepository extends ArrayRepository implements ConfigurableRepositoryInt
                 }
 
                 $packageData = $this->preProcess($driver, $data, $identifier);
-                $package = $this->loader->load($packageData);
+                $package     = $this->loader->load($packageData);
                 if ($this->loader instanceof ValidatingArrayLoader && $this->loader->getWarnings()) {
                     throw new InvalidPackageException($this->loader->getErrors(), $this->loader->getWarnings(), $packageData);
                 }
